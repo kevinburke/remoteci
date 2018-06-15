@@ -25,9 +25,6 @@ $(BUMP_VERSION):
 $(BENCHSTAT):
 	go get golang.org/x/perf/cmd/benchstat
 
-$(RELEASE):
-	go get -u github.com/aktau/github-release
-
 $(GOPATH)/bin:
 	mkdir -p $(GOPATH)/bin
 
@@ -38,3 +35,7 @@ else
 	curl --silent --location --output $(MEGACHECK) https://github.com/kevinburke/go-tools/releases/download/2018-04-15/megacheck-linux-amd64
 endif
 	chmod +x $(MEGACHECK)
+
+release: race-test | $(BUMP_VERSION)
+	$(BUMP_VERSION) minor remoteci.go
+	git push origin --tags

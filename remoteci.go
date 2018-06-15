@@ -8,6 +8,8 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+const Version = "0.1"
+
 func round(f float64) int {
 	if f < 0 {
 		return int(f - 0.5)
