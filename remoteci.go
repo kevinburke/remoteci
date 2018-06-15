@@ -1,6 +1,8 @@
 package remoteci
 
 import (
+	"net"
+	"net/url"
 	"time"
 
 	"golang.org/x/crypto/ssh/terminal"
@@ -11,6 +13,29 @@ func round(f float64) int {
 		return int(f - 0.5)
 	}
 	return int(f + 0.5)
+}
+
+// IsNetworkError returns true if the error is a timeout or network failure
+// (rather than a server error).
+func IsNetworkError(err error) bool {
+	if err == nil {
+		return false
+	}
+	// some net.OpError's are wrapped in a url.Error
+	if uerr, ok := err.(*url.Error); ok {
+		err = uerr.Err
+	}
+	switch err := err.(type) {
+	default:
+		return false
+	case *net.OpError:
+		return err.Op == "dial" && err.Net == "tcp"
+	case *net.DNSError:
+		return true
+	// Catchall, this needs to go last.
+	case net.Error:
+		return err.Timeout() || err.Temporary()
+	}
 }
 
 // GetEffectiveCost returns the cost in cents to pay an average San
